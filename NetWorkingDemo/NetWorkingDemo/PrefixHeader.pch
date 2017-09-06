@@ -1,0 +1,47 @@
+//
+//  PrefixHeader.pch
+//  ZeroDistance
+//
+//  Created by lisilong on 17/2/15.
+//  Copyright © 2017年 ainuolun. All rights reserved.
+//
+
+#ifndef PrefixHeader_pch
+#define PrefixHeader_pch
+
+// Include any system framework and library headers here that should be included in all compilation units.
+// You will also need to set the Prefix Header build setting of one or more of your targets to reference this file.
+
+#ifdef __OBJC__
+
+#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
+
+#import <SVProgressHUD/SVProgressHUD.h>
+#import <MJExtension/MJExtension.h>
+
+#import "YJRequestManager.h"
+#import "YJBaseRequest.h"
+
+#endif
+
+
+#ifdef DEBUG
+#define NSLog(...) NSLog(__VA_ARGS__)
+#else
+#define NSLog(...)
+#endif
+
+
+#define YJWeakSelf __weak typeof(self) weakSelf = self
+
+#define YJScreenHeight [UIScreen mainScreen].bounds.size.height
+#define YJScreenWidth  [UIScreen mainScreen].bounds.size.width
+
+#define YJScreenHeight [UIScreen mainScreen].bounds.size.height
+#define YJScreenWidth  [UIScreen mainScreen].bounds.size.width
+
+
+#define YJAppVersion ([[NSBundle mainBundle] objectForInfoDictionaryKey: @"CFBundleShortVersionString"]) 
+
+#endif /* PrefixHeader_pch */
