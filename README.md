@@ -4,6 +4,7 @@
 - 使用YJBaseRequest和YJBaseTableRequest两个基类统一管理网络请求需要的参数；
 - 使用两套请求方案，在请求上OC使用AFN，Swift使用Alamofire；在返回结果上首先会调用一个统一过滤返回结果的方法，最后才会把结果抛出来，这样其他人在调用的时候，只需要简单的判断这次请求是否有效的，做相应的处理就行了。
 - 在返回数据方面：OC我会返回id类型的响应值，相当于不做处理，在请求端选择相应的JSON转模型的框架。但是在Swift方面，我会直接使用一个我非常非常喜欢的框架SwiftyJSON，给调用者直接返回一个json格式的对象，这样在调用者根本不用怕，因没有获取到相应的值而做各种守护和判断的问题。
+- **核心： 统一处理返回值，选择性的提示错误信息。**
 
 ## 涉及的第三方框架
 > AFNetworking
@@ -200,12 +201,7 @@
 }
 
 - (void)setupHttpSessionManagerHeader {
-    YJUser *currentUser = [OPTRuntime sharedInstance].currentUser;
-    if (currentUser && currentUser.token.length > 0) {
-        [self.httpSessionManager.requestSerializer setValue:currentUser.token forHTTPHeaderField:@"token"];
-    } else{
-        [self.httpSessionManager.requestSerializer setValue:nil forHTTPHeaderField:@"token"];
-    }
+    // 设置请求头信息，比如token等。
 }
 ```
 
@@ -230,19 +226,13 @@
         case YJResponseCodeTokenInvalid: {                           // token失效
             completion ? completion(NO, nil) : nil;
             
-            [OPTRuntime sharedInstance].isTokenExpired = YES;
-            info = info.length > 0 ? info : @"登录会话已过期，需重新登录。";
-            [[NSNotificationCenter defaultCenter] postNotificationName:YJResetJPushAliasNotification object:nil];
-            [[NSNotificationCenter defaultCenter] postNotificationName:kYJTokenExpiredNotification object:nil userInfo:@{kYJTokenExpiredTipKey : info}];
+            // TODO: 统一处理 登录会话已过期，需重新登录。
         }
             break;
         case YJResponseCodeRemoteLogined: {                          // 异地登录
             completion ? completion(NO, nil) : nil;
             
-            [OPTRuntime sharedInstance].isRemoteLogin = YES;
-            info = info.length > 0 ? info : @"账号异地登录，请及时修改密码。";
-            [[NSNotificationCenter defaultCenter] postNotificationName:kYJRemoteLoginNotification object:self userInfo:@{kYJNonlocalLoginTipKey : info}];
-            [[NSNotificationCenter defaultCenter] postNotificationName:YJResetJPushAliasNotification object:nil];
+            // TODO: 统一处理 账号异地登录，请及时修改密码
         }
             break;
         case YJResponseCodeNoPayPassword:
