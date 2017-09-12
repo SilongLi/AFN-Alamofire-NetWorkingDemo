@@ -49,9 +49,10 @@ typedef void(^CompletionHandler)(BOOL success, id responseObject);
 
 - (void)postWithUrlString:(NSString *)urlString completion:(CompletionHandler)completion;
 
+
 /**
-    统一处理网络返回值
+ 统一处理网络返回值
  */
-- (void)handleResponseResultsWithResponse:(id)responseObject error:(NSError *)error completion:(CompletionHandler)completion;
+- (void)handleResponseResultsWithResponse:(id)responseObject httpResponse:(NSHTTPURLResponse *)httpResponse error:(NSError *)error completion:(CompletionHandler)completion;
 
 @end

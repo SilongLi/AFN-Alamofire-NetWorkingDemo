@@ -79,22 +79,23 @@ extension JYRequestManager {
         let method: HTTPMethod = (type == .get ? HTTPMethod.get : HTTPMethod.post)
         let params: Dictionary<String, Any> = request.parameters as! Dictionary<String, Any>
         Alamofire.request(urlStr, method: method, parameters: params, headers: self.httpHeaders()).responseJSON(completionHandler: { (response) in
+            
             switch response.result {
             case .success:
                 if let value = response.result.value as? [String: AnyObject] {
-                    weakSelf?.handleResponseResults(value, nil, completion)
+                    weakSelf?.handleResponseResults(value, response.response, nil, completion)
                 } else {
-                    weakSelf?.handleResponseResults(nil, nil, completion)
+                    weakSelf?.handleResponseResults(nil, response.response, nil, completion)
                 }
             case .failure(let error):
-                weakSelf?.handleResponseResults(nil, error, completion)
+                weakSelf?.handleResponseResults(nil, response.response, error, completion)
             }
         })
     }
     
     // MARK: - 统一处理网络请求返回值
-    private func handleResponseResults(_ responseObject: Any?, _ error: Error?, _ completion: @escaping RequestCompletion) -> () {
-        YJRequestManager.share().handleResponseResults(withResponse: responseObject, error: error) { (success, responseObject) in
+    private func handleResponseResults(_ responseObject: Any?, _ httpResponse: HTTPURLResponse?, _ error: Error?, _ completion: @escaping RequestCompletion) -> () {
+        YJRequestManager.share().handleResponseResults(withResponse: responseObject, httpResponse: httpResponse, error: error) { (success, responseObject) in
             guard success, responseObject != nil else {
                 completion(success, nil)
                 return

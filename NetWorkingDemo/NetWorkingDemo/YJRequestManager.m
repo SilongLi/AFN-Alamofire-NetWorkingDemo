@@ -27,13 +27,6 @@ typedef NS_ENUM(NSInteger, YJResponseCode) {
     YJResponseCodeSuccess            = 0,        // 请求成功
     YJResponseCodeRemoteLogined      = 7777,     // 异地登录
     YJResponseCodeTokenInvalid       = 9998,     // token失效
-    
-    YJResponseCodeNoPayPassword      = 9993,     // 用户未设置支付密码
-    YJResponseCodeNoVerifyPhone      = 9994,     // 用户手机未验证
-    YJResponseCodeNoOpenCount        = 9995,     // 用户汇付未开户
-    YJResponseCodeNoBoundBankCard    = 9996,     // 用户未绑定银行卡
-    YJResponseCodeNoPermissions      = 9997,     // 用户没有该权限
-    YJResponseCodeFailInfo           = 9999,     // 错误统一处理
 };
 
 @interface YJRequestManager ()
@@ -89,17 +82,17 @@ typedef NS_ENUM(NSInteger, YJResponseCode) {
     switch (type) {
         case YJRequestTypeGet: {
             [self.httpSessionManager GET:request.urlString parameters:request.parameters progress:nil success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
-                [weakSelf handleResponseResultsWithResponse:responseObject error:nil completion:completion];
+                [weakSelf handleResponseResultsWithResponse:responseObject httpResponse:(NSHTTPURLResponse *)task.response error:nil completion:completion];
             } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
-                [weakSelf handleResponseResultsWithResponse:nil error:error completion:completion];
+                [weakSelf handleResponseResultsWithResponse:nil httpResponse:(NSHTTPURLResponse *)task.response error:error completion:completion];
             }];
         }
             break;
         case YJRequestTypePost: {
             [self.httpSessionManager POST:request.urlString parameters:request.parameters progress:nil success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
-                [weakSelf handleResponseResultsWithResponse:responseObject error:nil completion:completion];
+                [weakSelf handleResponseResultsWithResponse:responseObject httpResponse:(NSHTTPURLResponse *)task.response error:nil completion:completion];
             } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
-                [weakSelf handleResponseResultsWithResponse:nil error:error completion:completion];
+                [weakSelf handleResponseResultsWithResponse:nil httpResponse:(NSHTTPURLResponse *)task.response error:error completion:completion];
             }];
         }
             break;
@@ -117,13 +110,30 @@ typedef NS_ENUM(NSInteger, YJResponseCode) {
 
 #pragma mark - 统一处理网络请求返回值
 
-- (void)handleResponseResultsWithResponse:(id)responseObject error:(NSError *)error completion:(CompletionHandler)completion {
+- (void)handleResponseResultsWithResponse:(id)responseObject
+                             httpResponse:(NSHTTPURLResponse *)httpResponse
+                                    error:(NSError *)error
+                               completion:(CompletionHandler)completion {
+    // 网络请求失败，上报Bugly
+    NSInteger statusCode = httpResponse.statusCode;
+    if (httpResponse && statusCode != 200) {
+        // TODO: 上报异常
+#ifdef DEBUG
+        [SVProgressHUD showInfoWithStatus:[NSString stringWithFormat:@"statusCode = %ld, error = %@",statusCode, error.localizedDescription]];
+#else
+        [SVProgressHUD showInfoWithStatus:@"网络繁忙，请稍后重试！"];
+#endif
+        completion ? completion(NO, nil) : nil;
+        return;
+    }
+    
     NSString *info = responseObject[@"resultMsg"];
     if (responseObject[@"resultCode"] == nil) {
         completion ? completion(NO, nil) : nil;
-        [self showMessageWithError:error info:info releaseShow:NO];
+        [self showMessageWithError:error info:info];
         return;
     }
+    
     NSInteger code = [responseObject[@"resultCode"] integerValue];
     switch (code) {
         case YJResponseCodeSuccess: {                                // 请求成功
@@ -132,58 +142,32 @@ typedef NS_ENUM(NSInteger, YJResponseCode) {
             break;
         case YJResponseCodeTokenInvalid: {                           // token失效
             completion ? completion(NO, nil) : nil;
-            
-            // TODO: 统一处理 登录会话已过期，需重新登录。
+            // TODO: token失效处理
         }
             break;
         case YJResponseCodeRemoteLogined: {                          // 异地登录
             completion ? completion(NO, nil) : nil;
-            
-            // TODO: 统一处理 账号异地登录，请及时修改密码
+            // TODO: 异地登录处理
         }
             break;
-        case YJResponseCodeNoPayPassword:
-        case YJResponseCodeNoVerifyPhone:
-        case YJResponseCodeNoOpenCount:
-        case YJResponseCodeNoBoundBankCard:
-        case YJResponseCodeNoPermissions:
-        case YJResponseCodeFailInfo: {                               // 需要提示用户的错误信息
+        default: {                                                   // 其它错误
             completion ? completion(NO, nil) : nil;
-            [self showMessageWithError:error info:info releaseShow:YES];
-        }
-            break;
-        default: {                                                  // 其它错误
-            completion ? completion(NO, nil) : nil;
-            [self showMessageWithError:error info:info releaseShow:NO];
+            [self showMessageWithError:error info:info];
         }
             break;
     }
 }
 
-- (void)showMessageWithError:(NSError *)error info:(NSString *)info releaseShow:(BOOL)releaseShow {
-    BOOL isRelease = NO;
-#ifdef DEBUG
-    isRelease = NO;
-#else
-    isRelease = YES;
-#endif
-    /**
-        提示错误信息：
-            1. 开发环境的时候（debug）;
-            2. 生成环境下，只有需要展示的错误信息才显示给用户（即当isRelease == YES && releaseShow == YES时，才提示）。
-     */
-    if (!isRelease ||
-        (isRelease && releaseShow)) {
-        if (error) {
-            [SVProgressHUD showErrorWithStatus:error.localizedDescription];
+- (void)showMessageWithError:(NSError *)error info:(NSString *)info {
+    if (error) {
+        [SVProgressHUD showErrorWithStatus:error.localizedDescription];
+    } else {
+        if (info.length > 0) {
+            [SVProgressHUD showErrorWithStatus:info];
         } else {
-            if (info.length > 0) {
-                [SVProgressHUD showErrorWithStatus:info];
-            } else {
-                [SVProgressHUD showInfoWithStatus:@"网络繁忙，请稍后重试！"];
-            }
+            [SVProgressHUD showInfoWithStatus:@"网络繁忙，请稍后重试！"];
         }
-    } else {}
+    }
 }
 
 #pragma mark - 打印网络请求信息
