@@ -132,22 +132,23 @@
         let method: HTTPMethod = (type == .get ? HTTPMethod.get : HTTPMethod.post)
         let params: Dictionary<String, Any> = request.parameters as! Dictionary<String, Any>
         Alamofire.request(urlStr, method: method, parameters: params, headers: self.httpHeaders()).responseJSON(completionHandler: { (response) in
+            
             switch response.result {
             case .success:
                 if let value = response.result.value as? [String: AnyObject] {
-                    weakSelf?.handleResponseResults(value, nil, completion)
+                    weakSelf?.handleResponseResults(value, response.response, nil, completion)
                 } else {
-                    weakSelf?.handleResponseResults(nil, nil, completion)
+                    weakSelf?.handleResponseResults(nil, response.response, nil, completion)
                 }
             case .failure(let error):
-                weakSelf?.handleResponseResults(nil, error, completion)
+                weakSelf?.handleResponseResults(nil, response.response, error, completion)
             }
         })
     }
     
     // MARK: - 统一处理网络请求返回值
-    private func handleResponseResults(_ responseObject: Any?, _ error: Error?, _ completion: @escaping RequestCompletion) -> () {
-        YJRequestManager.share().handleResponseResults(withResponse: responseObject, error: error) { (success, responseObject) in
+    private func handleResponseResults(_ responseObject: Any?, _ httpResponse: HTTPURLResponse?, _ error: Error?, _ completion: @escaping RequestCompletion) -> () {
+        YJRequestManager.share().handleResponseResults(withResponse: responseObject, httpResponse: httpResponse, error: error) { (success, responseObject) in
             guard success, responseObject != nil else {
                 completion(success, nil)
                 return
@@ -156,7 +157,6 @@
             completion(true, json)
         }
     }
-
 ```
 
 这里Swift调用了OC封装的统一过滤网络请求的方法。
@@ -178,17 +178,17 @@
     switch (type) {
         case YJRequestTypeGet: {
             [self.httpSessionManager GET:request.urlString parameters:request.parameters progress:nil success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
-                [weakSelf handleResponseResultsWithResponse:responseObject error:nil completion:completion];
+                [weakSelf handleResponseResultsWithResponse:responseObject httpResponse:(NSHTTPURLResponse *)task.response error:nil completion:completion];
             } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
-                [weakSelf handleResponseResultsWithResponse:nil error:error completion:completion];
+                [weakSelf handleResponseResultsWithResponse:nil httpResponse:(NSHTTPURLResponse *)task.response error:error completion:completion];
             }];
         }
             break;
         case YJRequestTypePost: {
             [self.httpSessionManager POST:request.urlString parameters:request.parameters progress:nil success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
-                [weakSelf handleResponseResultsWithResponse:responseObject error:nil completion:completion];
+                [weakSelf handleResponseResultsWithResponse:responseObject httpResponse:(NSHTTPURLResponse *)task.response error:nil completion:completion];
             } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
-                [weakSelf handleResponseResultsWithResponse:nil error:error completion:completion];
+                [weakSelf handleResponseResultsWithResponse:nil httpResponse:(NSHTTPURLResponse *)task.response error:error completion:completion];
             }];
         }
             break;
@@ -201,7 +201,7 @@
 }
 
 - (void)setupHttpSessionManagerHeader {
-    // 设置请求头信息，比如token等。
+    // 设置请求头信息，比如token等
 }
 ```
 
@@ -210,13 +210,30 @@
 ```objc
 #pragma mark - 统一处理网络请求返回值
 
-- (void)handleResponseResultsWithResponse:(id)responseObject error:(NSError *)error completion:(CompletionHandler)completion {
+- (void)handleResponseResultsWithResponse:(id)responseObject
+                             httpResponse:(NSHTTPURLResponse *)httpResponse
+                                    error:(NSError *)error
+                               completion:(CompletionHandler)completion {
+    // 网络请求失败，上报Bugly
+    NSInteger statusCode = httpResponse.statusCode;
+    if (httpResponse && statusCode != 200) {
+        // TODO: 上报异常
+#ifdef DEBUG
+        [SVProgressHUD showInfoWithStatus:[NSString stringWithFormat:@"statusCode = %ld, error = %@",statusCode, error.localizedDescription]];
+#else
+        [SVProgressHUD showInfoWithStatus:@"网络繁忙，请稍后重试！"];
+#endif
+        completion ? completion(NO, nil) : nil;
+        return;
+    }
+    
     NSString *info = responseObject[@"resultMsg"];
     if (responseObject[@"resultCode"] == nil) {
         completion ? completion(NO, nil) : nil;
-        [self showMessageWithError:error info:info releaseShow:NO];
+        [self showMessageWithError:error info:info];
         return;
     }
+    
     NSInteger code = [responseObject[@"resultCode"] integerValue];
     switch (code) {
         case YJResponseCodeSuccess: {                                // 请求成功
@@ -225,62 +242,37 @@
             break;
         case YJResponseCodeTokenInvalid: {                           // token失效
             completion ? completion(NO, nil) : nil;
-            
-            // TODO: 统一处理 登录会话已过期，需重新登录。
+            // TODO: token失效处理
         }
             break;
         case YJResponseCodeRemoteLogined: {                          // 异地登录
             completion ? completion(NO, nil) : nil;
-            
-            // TODO: 统一处理 账号异地登录，请及时修改密码
+            // TODO: 异地登录处理
         }
             break;
-        case YJResponseCodeNoPayPassword:
-        case YJResponseCodeNoVerifyPhone:
-        case YJResponseCodeNoOpenCount:
-        case YJResponseCodeNoBoundBankCard:
-        case YJResponseCodeNoPermissions:
-        case YJResponseCodeFailInfo: {                               // 需要提示用户的错误信息
+        default: {                                                   // 其它错误
             completion ? completion(NO, nil) : nil;
-            [self showMessageWithError:error info:info releaseShow:YES];
-        }
-            break;
-        default: {                                                  // 其它错误
-            completion ? completion(NO, nil) : nil;
-            [self showMessageWithError:error info:info releaseShow:NO];
+            [self showMessageWithError:error info:info];
         }
             break;
     }
 }
 
-- (void)showMessageWithError:(NSError *)error info:(NSString *)info releaseShow:(BOOL)releaseShow {
-    BOOL isRelease = NO;
-#ifdef DEBUG
-    isRelease = NO;
-#else
-    isRelease = YES;
-#endif
-    /**
-        提示错误信息：
-            1. 开发环境的时候（debug）;
-            2. 生成环境下，只有需要展示的错误信息才显示给用户（即当isRelease == YES && releaseShow == YES时，才提示）。
-     */
-    if (!isRelease ||
-        (isRelease && releaseShow)) {
-        if (error) {
-            [SVProgressHUD showErrorWithStatus:error.localizedDescription];
+- (void)showMessageWithError:(NSError *)error info:(NSString *)info {
+    if (error) {
+        [SVProgressHUD showErrorWithStatus:error.localizedDescription];
+    } else {
+        if (info.length > 0) {
+            [SVProgressHUD showErrorWithStatus:info];
         } else {
-            if (info.length > 0) {
-                [SVProgressHUD showErrorWithStatus:info];
-            } else {
-                [SVProgressHUD showInfoWithStatus:@"网络繁忙，请稍后重试！"];
-            }
+            [SVProgressHUD showInfoWithStatus:@"网络繁忙，请稍后重试！"];
         }
-    } else {}
+    }
 }
+
 ```
 
- 
+
 
 ## 结尾
 > 以上是个人对网络请求的简单理解，如有疑问或建议，欢迎积极留言探讨。>v<
