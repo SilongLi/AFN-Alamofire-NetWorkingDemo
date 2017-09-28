@@ -1,9 +1,9 @@
 //
 //  YJRequestManager.h
-//  YaoJiFinancing
+//  NetWorking
 //
 //  Created by lisilong on 17/8/10.
-//  Copyright © 2017年 ainuolun. All rights reserved.
+//  Copyright © 2017年 LongDream. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>

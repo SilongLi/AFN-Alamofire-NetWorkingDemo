@@ -1,16 +1,15 @@
 //
 //  JYRequestManager.swift
-//  YaoJiFinancing
+//  NetWorking
 //
 //  Created by lisilong on 17/8/5.
-//  Copyright © 2017年 ainuolun. All rights reserved.
+//  Copyright © 2017年 LongDream. All rights reserved.
 //
 
 import UIKit
 import Alamofire
 import SVProgressHUD
 import SwiftyJSON
-
 
 class JYRequestManager: NSObject {
     
