@@ -12,16 +12,27 @@ import SVProgressHUD
 import SwiftyJSON
 
 class JYRequestManager: NSObject {
-    
     enum RequestType {
         case get
         case post
     }
     
+    var manager: SessionManager?
     typealias RequestCompletion = (Bool, JSON?) -> ()
     
     static let share = JYRequestManager.init()
     private override init() {
+        let cerPath = Bundle.main.path(forResource: YJCerFileName, ofType: "cer")
+        let certificateData = try? Data(contentsOf: URL(fileURLWithPath: cerPath!)) as CFData
+        let certificate = SecCertificateCreateWithData(nil, certificateData!)
+        let serverTrustPolicy = ServerTrustPolicy.pinCertificates(
+            certificates: [certificate!],
+            validateCertificateChain: true,
+            validateHost: true
+        )
+       
+        let serverTrustPolicies: [String : ServerTrustPolicy] = [YJCerFileName : serverTrustPolicy]
+        manager = Alamofire.SessionManager.init(serverTrustPolicyManager: ServerTrustPolicyManager(policies: serverTrustPolicies))
         super.init()
     }
 }
@@ -65,7 +76,7 @@ extension JYRequestManager {
  
     // MARK: - <Alamofire>
     private func request(_ type: RequestType, _ request: YJBaseRequest, _ completion: @escaping RequestCompletion) -> () {
-        guard request.urlString.characters.count > 0 else {
+        guard request.urlString.count > 0 else {
             #if DEBUGSWIFT
                 SVProgressHUD.showInfo(withStatus: "兄弟，你没有设置请求路径。")
             #endif
@@ -77,8 +88,7 @@ extension JYRequestManager {
         weak var weakSelf = self
         let method: HTTPMethod = (type == .get ? HTTPMethod.get : HTTPMethod.post)
         let params: Dictionary<String, Any> = request.parameters as! Dictionary<String, Any>
-        Alamofire.request(urlStr, method: method, parameters: params, headers: self.httpHeaders()).responseJSON(completionHandler: { (response) in
-            
+        manager?.request(urlStr, method: method, parameters: params, headers: self.httpHeaders()).responseJSON(completionHandler: { (response) in
             switch response.result {
             case .success:
                 if let value = response.result.value as? [String: AnyObject] {

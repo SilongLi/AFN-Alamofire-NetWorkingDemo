@@ -18,7 +18,8 @@
 		995CBC401F5FE9BA00390438 /* YJRequestManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 995CBC3E1F5FE9BA00390438 /* YJRequestManager.m */; };
 		995CBC431F5FE9C100390438 /* YJBaseRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 995CBC421F5FE9C100390438 /* YJBaseRequest.m */; };
 		995CBC461F5FEED600390438 /* RequestDemo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 995CBC451F5FEED600390438 /* RequestDemo.swift */; };
-		995CBC491F5FF55600390438 /* YJMessageRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 995CBC481F5FF55600390438 /* YJMessageRequest.m */; };
+		99D750ED1FC7222C00599AA3 /* app.yjlc.com.cer in Resources */ = {isa = PBXBuildFile; fileRef = 99D750EC1FC7222C00599AA3 /* app.yjlc.com.cer */; };
+		99D750F01FC7229C00599AA3 /* YJMessageRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 99D750EE1FC7229B00599AA3 /* YJMessageRequest.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -41,8 +42,9 @@
 		995CBC421F5FE9C100390438 /* YJBaseRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YJBaseRequest.m; sourceTree = "<group>"; };
 		995CBC441F5FEC3E00390438 /* PrefixHeader.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PrefixHeader.pch; sourceTree = "<group>"; };
 		995CBC451F5FEED600390438 /* RequestDemo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RequestDemo.swift; sourceTree = "<group>"; };
-		995CBC471F5FF55600390438 /* YJMessageRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YJMessageRequest.h; sourceTree = "<group>"; };
-		995CBC481F5FF55600390438 /* YJMessageRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YJMessageRequest.m; sourceTree = "<group>"; };
+		99D750EC1FC7222C00599AA3 /* app.yjlc.com.cer */ = {isa = PBXFileReference; lastKnownFileType = file; path = app.yjlc.com.cer; sourceTree = "<group>"; };
+		99D750EE1FC7229B00599AA3 /* YJMessageRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YJMessageRequest.m; sourceTree = "<group>"; };
+		99D750EF1FC7229C00599AA3 /* YJMessageRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YJMessageRequest.h; sourceTree = "<group>"; };
 		BB218507E61FE972DF797F0D /* Pods-NetWorkingDemo.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NetWorkingDemo.debug.xcconfig"; path = "Pods/Target Support Files/Pods-NetWorkingDemo/Pods-NetWorkingDemo.debug.xcconfig"; sourceTree = "<group>"; };
 		C0AE38EA82D5E0A92FBDA220 /* Pods-NetWorkingDemo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NetWorkingDemo.release.xcconfig"; path = "Pods/Target Support Files/Pods-NetWorkingDemo/Pods-NetWorkingDemo.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -91,8 +93,8 @@
 				995CBC3A1F5FE98E00390438 /* NetWorkingTools */,
 				995CBC261F5FE96E00390438 /* AppDelegate.h */,
 				995CBC271F5FE96E00390438 /* AppDelegate.m */,
-				995CBC471F5FF55600390438 /* YJMessageRequest.h */,
-				995CBC481F5FF55600390438 /* YJMessageRequest.m */,
+				99D750EF1FC7229C00599AA3 /* YJMessageRequest.h */,
+				99D750EE1FC7229B00599AA3 /* YJMessageRequest.m */,
 				995CBC451F5FEED600390438 /* RequestDemo.swift */,
 				995CBC291F5FE96E00390438 /* ViewController.h */,
 				995CBC2A1F5FE96E00390438 /* ViewController.m */,
@@ -104,6 +106,7 @@
 		995CBC231F5FE96E00390438 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				99D750EC1FC7222C00599AA3 /* app.yjlc.com.cer */,
 				995CBC441F5FEC3E00390438 /* PrefixHeader.pch */,
 				995CBC2C1F5FE96E00390438 /* Main.storyboard */,
 				995CBC2F1F5FE96E00390438 /* Assets.xcassets */,
@@ -201,6 +204,7 @@
 			files = (
 				995CBC331F5FE96E00390438 /* LaunchScreen.storyboard in Resources */,
 				995CBC301F5FE96E00390438 /* Assets.xcassets in Resources */,
+				99D750ED1FC7222C00599AA3 /* app.yjlc.com.cer in Resources */,
 				995CBC2E1F5FE96E00390438 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -278,9 +282,9 @@
 				995CBC401F5FE9BA00390438 /* YJRequestManager.m in Sources */,
 				995CBC2B1F5FE96E00390438 /* ViewController.m in Sources */,
 				995CBC431F5FE9C100390438 /* YJBaseRequest.m in Sources */,
-				995CBC491F5FF55600390438 /* YJMessageRequest.m in Sources */,
 				995CBC281F5FE96E00390438 /* AppDelegate.m in Sources */,
 				995CBC461F5FEED600390438 /* RequestDemo.swift in Sources */,
+				99D750F01FC7229C00599AA3 /* YJMessageRequest.m in Sources */,
 				995CBC251F5FE96E00390438 /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

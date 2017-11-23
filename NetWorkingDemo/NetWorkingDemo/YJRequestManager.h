@@ -18,6 +18,7 @@ extern NSString * const YJBaseURLString;
 extern NSString * const YJBaseWebURLString;
 #endif
 
+extern NSString * const YJCerFileName;
 
 typedef void(^CompletionHandler)(BOOL success, id responseObject);
 

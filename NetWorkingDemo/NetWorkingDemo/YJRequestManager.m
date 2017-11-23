@@ -11,12 +11,13 @@
 
 
 #ifdef DEBUG
-NSString * const YJBaseURLString = @"http://app.join51.com/";    // 开发环境
+NSString * const YJBaseURLString = @"https://app.yjlc.com/";    // 开发环境
 
 #else
-NSString * const YJBaseURLString = @"http://app.join51.com/";    // 生产环境
+NSString * const YJBaseURLString = @"https://app.yjlc.com/";    // 生产环境
 #endif
 
+NSString * const YJCerFileName = @"app.yjlc.com";   // cer证书名称
 
 typedef NS_ENUM(NSInteger, YJRequestType) {
     YJRequestTypeGet,
@@ -187,14 +188,14 @@ typedef NS_ENUM(NSInteger, YJResponseCode) {
         [_httpSessionManager.requestSerializer setValue:[UIDevice currentDevice].systemVersion forHTTPHeaderField:@"sdkVersion"];
         [_httpSessionManager.requestSerializer setValue:YJAppVersion forHTTPHeaderField:@"version"];
         //----- https 适配 SecurityPolicy
-//        _httpSessionManager.securityPolicy = [YJRequestManager customSecurityPolicy];
+        _httpSessionManager.securityPolicy = [YJRequestManager customSecurityPolicy];        
         _httpSessionManager.responseSerializer.acceptableContentTypes = [NSSet setWithObjects:@"application/json", @"text/json", @"text/javascript", @"text/html", nil];
     }
     return _httpSessionManager;
 }
 
 + (AFSecurityPolicy*)customSecurityPolicy {
-    NSString *cerPath = [[NSBundle mainBundle] pathForResource:@"ymsj" ofType:@"cer"];//证书的路径
+    NSString *cerPath = [[NSBundle mainBundle] pathForResource:YJCerFileName ofType:@"cer"];//证书的路径
     NSData *certData = [NSData dataWithContentsOfFile:cerPath];
     
     // AFSSLPinningModeCertificate 使用证书验证模式
