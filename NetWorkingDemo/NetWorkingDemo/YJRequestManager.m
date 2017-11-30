@@ -10,12 +10,15 @@
 #import <AFNetworking/AFNetworking.h>
 
 
-#ifdef DEBUG
-NSString * const YJBaseURLString = @"https://app.yjlc.com/";    // 开发环境
+NSString * const YJDebugBaseURLString   = @"https://app.yjlc.com/"; // 开发环境
+NSString * const YJReleaseBaseURLString = @"https://app.yjlc.com/"; // 生产环境
 
+#ifdef DEBUG
+NSString * const YJBaseURLString = YJDebugBaseURLString;
 #else
-NSString * const YJBaseURLString = @"https://app.yjlc.com/";    // 生产环境
+NSString * const YJBaseURLString = YJReleaseBaseURLString;
 #endif
+
 
 NSString * const YJCerFileName = @"app.yjlc.com";   // cer证书名称
 

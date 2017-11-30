@@ -17,6 +17,7 @@
     return self;
 }
 
+// 配置在model转json时，需要忽略的辅助参数
 - (NSDictionary *)parameters {
     return [self mj_keyValuesWithIgnoredKeys:@[@"urlString", @"showHUD", @"parameters"]];
 }
